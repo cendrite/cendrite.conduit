@@ -91,6 +91,15 @@ internal sealed class IdentityEndpoints : IEndpoint
          .Produces<GetNonceDto>()
          .ProducesProblem(StatusCodes.Status400BadRequest);
 
+        group.MapGet("signup-challenge", async (
+                [FromServices] ISender sender,
+                CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetSignupChallengeQuery(), ct);
+            return result.Success ? Results.Ok(result.Value) : result.ToProblemDetails();
+        })
+        .Produces<GetSignupChallengeDto>();
+
         var user = group.MapGroup("user");
 
         user.MapPost("", async (
