@@ -1,0 +1,8 @@
+namespace Conduit.Application.Features.Account.Commands.Signup;
+
+public sealed record SignupDto
+{
+    public required Guid UserId { get; init; }
+    public required Guid DeviceId { get; init; }
+    public required Guid DeviceConnectionId { get; init; }
+}

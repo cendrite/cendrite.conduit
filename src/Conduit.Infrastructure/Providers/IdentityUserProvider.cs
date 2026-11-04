@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using Conduit.Application.Contracts.Providers;
 using Conduit.Application.Features.Account.Commands.Register;
+using Conduit.Application.Features.Account.Commands.Signup;
 using Conduit.Application.Features.Device.Commands.Create;
 using Conduit.Application.Features.Device.Queries.GetDevices;
 using Conduit.Domain.Common;
@@ -33,6 +34,22 @@ internal sealed class IdentityUserProvider(
         }
 
         return await response.GetValueAsync<RegisterDto>(ct);
+    }
+
+    public async Task<Result<SignupDto>> SignupAsync(SignupCommand command, CancellationToken ct = default)
+    {
+        var response = await SendAsync(() => _client.PostAsJsonAsync("signup", command, ct), ct);
+
+        if (response is null)
+            return Result.Fail<SignupDto>(Unreachable);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogError("IdentityUserClient failed with status code {ResponseStatusCode}", response.StatusCode);
+            return await response.ToPassthroughFailureResultAsync<SignupDto>(ct);
+        }
+
+        return await response.GetValueAsync<SignupDto>(ct);
     }
 
     public async Task<Result> VerifyAsync(Guid userId, string verificationCode, CancellationToken ct = default)

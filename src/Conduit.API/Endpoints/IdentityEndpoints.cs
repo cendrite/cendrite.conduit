@@ -2,6 +2,7 @@ using Conduit.API.Common;
 using Conduit.API.Requests;
 using Conduit.Application.Features.Account.Commands.Register;
 using Conduit.Application.Features.Account.Commands.ResendVerificationCode;
+using Conduit.Application.Features.Account.Commands.Signup;
 using Conduit.Application.Features.Account.Commands.Verify;
 using Conduit.Application.Features.Authentication.Commands.Login;
 using Conduit.Application.Features.Authentication.Commands.Logout;
@@ -114,6 +115,30 @@ internal sealed class IdentityEndpoints : IEndpoint
         .Accepts<RegisterRequest>("application/json")
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status409Conflict);
+
+        user.MapPost("signup", async (
+                [FromServices] ISender sender,
+                [FromBody] SignupRequest req,
+                CancellationToken ct) =>
+        {
+            var result = await sender.Send(new SignupCommand
+            {
+                Username = req.Username,
+                AccountPublicKey = req.AccountPublicKey,
+                ChallengeId = req.ChallengeId,
+                PowNonce = req.PowNonce,
+                ChallengeSignature = req.ChallengeSignature,
+                DevicePublicKey = req.DevicePublicKey,
+                DeviceApproval = req.DeviceApproval,
+                DeviceAppVersion = req.DeviceAppVersion,
+                DeviceType = req.DeviceType,
+                DevicePlatform = req.DevicePlatform
+            }, ct);
+            return result.Success ? Results.Ok(result.Value) : result.ToProblemDetails();
+        })
+        .Produces<SignupDto>()
+        .Accepts<SignupRequest>("application/json")
+        .ProducesProblem(StatusCodes.Status400BadRequest);
 
         user.MapPut("verify", async (
                 [FromServices] ISender sender,
