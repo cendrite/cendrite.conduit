@@ -71,6 +71,19 @@ internal sealed class AuthenticationProvider(
 
     }
 
+    public async Task<Result<GetSignupChallengeDto>> GetSignupChallengeAsync(CancellationToken ct = default)
+    {
+        var response = await _client.GetAsync("signup-challenge", ct);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogError("IdentityClient failed with status code {ResponseStatusCode}", response.StatusCode);
+            return await response.ToFailureResultAsync<GetSignupChallengeDto>(ct);
+        }
+
+        return await response.GetValueAsync<GetSignupChallengeDto>(ct);
+    }
+
     public async Task<Result<VerifyNonceDto>> VerifyNonceAsync(Guid userId, Guid nonceId, Guid deviceId, string nonce, bool announce, IReadOnlyList<string> tokenRequests, CancellationToken ct = default)
     {
         var response = await _client.PostAsJsonAsync("verify-nonce", new { UserId = userId, NonceId = nonceId, DeviceId = deviceId, Nonce = nonce, Announce = announce, TokenRequests = tokenRequests }, ct);
