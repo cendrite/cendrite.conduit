@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using Conduit.Application.Contracts.Providers;
+using Conduit.Application.Features.Authentication.Commands.BeginRecovery;
 using Conduit.Application.Features.Authentication.Commands.VerifyNonce;
 using Conduit.Application.Features.Authentication.Queries;
 using Conduit.Domain.Common;
@@ -54,6 +55,19 @@ internal sealed class AuthenticationProvider(
         }
 
         return await response.GetValueAsync<GetSignupChallengeDto>(ct);
+    }
+
+    public async Task<Result<BeginRecoveryDto>> BeginRecoveryAsync(string accountPublicKey, CancellationToken ct = default)
+    {
+        var response = await _client.PostAsJsonAsync("recovery-challenge", new { AccountPublicKey = accountPublicKey }, ct);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogError("IdentityClient failed with status code {ResponseStatusCode}", response.StatusCode);
+            return await response.ToFailureResultAsync<BeginRecoveryDto>(ct);
+        }
+
+        return await response.GetValueAsync<BeginRecoveryDto>(ct);
     }
 
     public async Task<Result<VerifyNonceDto>> VerifyNonceAsync(Guid userId, Guid nonceId, Guid deviceId, string nonce, bool announce, IReadOnlyList<string> tokenRequests, CancellationToken ct = default)

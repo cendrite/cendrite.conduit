@@ -1,6 +1,8 @@
 using Conduit.API.Common;
 using Conduit.API.Requests;
+using Conduit.Application.Features.Account.Commands.Recover;
 using Conduit.Application.Features.Account.Commands.Signup;
+using Conduit.Application.Features.Authentication.Commands.BeginRecovery;
 using Conduit.Application.Features.Authentication.Commands.Logout;
 using Conduit.Application.Features.Authentication.Commands.VerifyNonce;
 using Conduit.Application.Features.Authentication.Queries;
@@ -70,6 +72,19 @@ internal sealed class IdentityEndpoints : IEndpoint
         })
         .Produces<GetSignupChallengeDto>();
 
+        group.MapPost("recovery-challenge", async (
+                [FromServices] ISender sender,
+                [FromBody] BeginRecoveryRequest req,
+                CancellationToken ct) =>
+        {
+            var result = await sender.Send(new BeginRecoveryCommand { AccountPublicKey = req.AccountPublicKey }, ct);
+            return result.Success ? Results.Ok(result.Value) : result.ToProblemDetails();
+        })
+        .Produces<BeginRecoveryDto>()
+        .Accepts<BeginRecoveryRequest>("application/json")
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status429TooManyRequests);
+
         var user = group.MapGroup("user");
 
         user.MapPost("signup", async (
@@ -94,6 +109,28 @@ internal sealed class IdentityEndpoints : IEndpoint
         })
         .Produces<SignupDto>()
         .Accepts<SignupRequest>("application/json")
+        .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        user.MapPost("recover", async (
+                [FromServices] ISender sender,
+                [FromBody] RecoverRequest req,
+                CancellationToken ct) =>
+        {
+            var result = await sender.Send(new RecoverCommand
+            {
+                AccountPublicKey = req.AccountPublicKey,
+                ChallengeId = req.ChallengeId,
+                ChallengeSignature = req.ChallengeSignature,
+                DevicePublicKey = req.DevicePublicKey,
+                DeviceApproval = req.DeviceApproval,
+                DeviceAppVersion = req.DeviceAppVersion,
+                DeviceType = req.DeviceType,
+                DevicePlatform = req.DevicePlatform
+            }, ct);
+            return result.Success ? Results.Ok(result.Value) : result.ToProblemDetails();
+        })
+        .Produces<RecoverDto>()
+        .Accepts<RecoverRequest>("application/json")
         .ProducesProblem(StatusCodes.Status400BadRequest);
 
         user.MapGet("devices", async (
