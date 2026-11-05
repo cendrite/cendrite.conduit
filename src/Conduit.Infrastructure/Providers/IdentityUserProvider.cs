@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using Conduit.Application.Contracts.Providers;
+using Conduit.Application.Features.Account.Commands.Recover;
 using Conduit.Application.Features.Account.Commands.Signup;
 using Conduit.Application.Features.Device.Queries.GetDevices;
 using Conduit.Domain.Common;
@@ -32,6 +33,22 @@ internal sealed class IdentityUserProvider(
         }
 
         return await response.GetValueAsync<SignupDto>(ct);
+    }
+
+    public async Task<Result<RecoverDto>> RecoverAsync(RecoverCommand command, CancellationToken ct = default)
+    {
+        var response = await SendAsync(() => _client.PostAsJsonAsync("recover", command, ct), ct);
+
+        if (response is null)
+            return Result.Fail<RecoverDto>(Unreachable);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogError("IdentityUserClient failed with status code {ResponseStatusCode}", response.StatusCode);
+            return await response.ToPassthroughFailureResultAsync<RecoverDto>(ct);
+        }
+
+        return await response.GetValueAsync<RecoverDto>(ct);
     }
 
     public async Task<Result<GetDevicesDto>> GetDevicesAsync(CancellationToken ct = default)
