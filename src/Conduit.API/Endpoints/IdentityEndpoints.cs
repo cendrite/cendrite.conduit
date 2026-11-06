@@ -3,6 +3,12 @@ using Conduit.API.Requests;
 using Conduit.Application.Features.Account.Commands.Recover;
 using Conduit.Application.Features.Account.Commands.Signup;
 using Conduit.Application.Features.Authentication.Commands.BeginRecovery;
+using Conduit.Application.Features.Device.Commands.ApproveLink;
+using Conduit.Application.Features.Device.Commands.CreateLinkCode;
+using Conduit.Application.Features.Device.Commands.RedeemLinkCode;
+using Conduit.Application.Features.Device.Commands.RejectLink;
+using Conduit.Application.Features.Device.Queries.GetLinkStatus;
+using Conduit.Application.Features.Device.Queries.GetPendingLink;
 using Conduit.Application.Features.Authentication.Commands.Logout;
 using Conduit.Application.Features.Authentication.Commands.VerifyNonce;
 using Conduit.Application.Features.Authentication.Queries;
@@ -132,6 +138,80 @@ internal sealed class IdentityEndpoints : IEndpoint
         .Produces<RecoverDto>()
         .Accepts<RecoverRequest>("application/json")
         .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        var link = user.MapGroup("device/link");
+
+        link.MapPost("code", async ([FromServices] ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new CreateLinkCodeCommand(), ct);
+            return result.Success ? Results.Ok(result.Value) : result.ToProblemDetails();
+        })
+        .RequireAuthorization()
+        .Produces<CreateLinkCodeDto>()
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status429TooManyRequests);
+
+        link.MapPost("", async ([FromServices] ISender sender, [FromBody] RedeemLinkCodeRequest req, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new RedeemLinkCodeCommand
+            {
+                Code = req.Code,
+                DevicePublicKey = req.DevicePublicKey,
+                DeviceAppVersion = req.DeviceAppVersion,
+                DeviceType = req.DeviceType,
+                DevicePlatform = req.DevicePlatform
+            }, ct);
+            return result.Success ? Results.Ok(result.Value) : result.ToProblemDetails();
+        })
+        .Produces<RedeemLinkCodeDto>()
+        .Accepts<RedeemLinkCodeRequest>("application/json")
+        .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        link.MapGet("{pendingLinkId:guid}/status", async (
+                [FromServices] ISender sender,
+                [FromRoute] Guid pendingLinkId,
+                [FromHeader(Name = "X-Poll-Secret")] string pollSecret,
+                CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetLinkStatusQuery { PendingLinkId = pendingLinkId, PollSecret = pollSecret }, ct);
+            return result.Success ? Results.Ok(result.Value) : result.ToProblemDetails();
+        })
+        .Produces<LinkStatusDto>()
+        .ProducesProblem(StatusCodes.Status429TooManyRequests);
+
+        link.MapGet("{pendingLinkId:guid}", async ([FromServices] ISender sender, [FromRoute] Guid pendingLinkId, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetPendingLinkQuery { PendingLinkId = pendingLinkId }, ct);
+            return result.Success ? Results.Ok(result.Value) : result.ToProblemDetails();
+        })
+        .RequireAuthorization()
+        .Produces<PendingLinkDto>()
+        .ProducesProblem(StatusCodes.Status404NotFound);
+
+        link.MapPost("{pendingLinkId:guid}/approve", async (
+                [FromServices] ISender sender,
+                [FromRoute] Guid pendingLinkId,
+                [FromBody] ApproveLinkRequest req,
+                CancellationToken ct) =>
+        {
+            var result = await sender.Send(new ApproveLinkCommand { PendingLinkId = pendingLinkId, Approval = req.Approval }, ct);
+            return result.Success ? Results.Ok() : result.ToProblemDetails();
+        })
+        .RequireAuthorization()
+        .Produces(StatusCodes.Status200OK)
+        .Accepts<ApproveLinkRequest>("application/json")
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status404NotFound);
+
+        link.MapPost("{pendingLinkId:guid}/reject", async ([FromServices] ISender sender, [FromRoute] Guid pendingLinkId, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new RejectLinkCommand { PendingLinkId = pendingLinkId }, ct);
+            return result.Success ? Results.Ok() : result.ToProblemDetails();
+        })
+        .RequireAuthorization()
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status404NotFound);
 
         user.MapGet("devices", async (
                 [FromServices] ISender sender,
