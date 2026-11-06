@@ -112,6 +112,9 @@ internal sealed class IdentityUserProvider(
     public Task<Result> RejectLinkAsync(Guid pendingLinkId, CancellationToken ct = default) =>
         Relay(() => _client.PostAsync($"device/link/{pendingLinkId}/reject", null, ct), ct);
 
+    public Task<Result> RenameDeviceAsync(Guid targetDeviceId, string name, CancellationToken ct = default) =>
+        Relay(() => _client.PutAsJsonAsync($"device/{targetDeviceId}/name", new { Name = name }, ct), ct);
+
     private async Task<Result<T>> Relay<T>(Func<Task<HttpResponseMessage>> send, CancellationToken ct)
     {
         var response = await SendAsync(send, ct);
