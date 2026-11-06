@@ -24,4 +24,5 @@ public interface IIdentityUserProvider
     Task<Result> RejectLinkAsync(Guid pendingLinkId, CancellationToken ct = default);
 
     Task<Result> DeleteDeviceAsync(Guid targetDeviceId, CancellationToken ct = default);
+    Task<Result> RenameDeviceAsync(Guid targetDeviceId, string name, CancellationToken ct = default);
 }

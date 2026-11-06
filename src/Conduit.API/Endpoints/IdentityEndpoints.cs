@@ -13,6 +13,7 @@ using Conduit.Application.Features.Authentication.Commands.Logout;
 using Conduit.Application.Features.Authentication.Commands.VerifyNonce;
 using Conduit.Application.Features.Authentication.Queries;
 using Conduit.Application.Features.Device.Commands.Delete;
+using Conduit.Application.Features.Device.Commands.Rename;
 using Conduit.Application.Features.Device.Queries.GetDevices;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
@@ -235,6 +236,22 @@ internal sealed class IdentityEndpoints : IEndpoint
         })
         .RequireAuthorization()
         .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status404NotFound);
+
+        user.MapPut("device/{targetDeviceId:guid}/name", async (
+                [FromServices] ISender sender,
+                [FromRoute] Guid targetDeviceId,
+                [FromBody] RenameDeviceRequest req,
+                CancellationToken ct) =>
+        {
+            var result = await sender.Send(new RenameDeviceCommand { TargetDeviceId = targetDeviceId, Name = req.Name }, ct);
+            return result.Success ? Results.Ok() : result.ToProblemDetails();
+        })
+        .RequireAuthorization()
+        .Produces(StatusCodes.Status200OK)
+        .Accepts<RenameDeviceRequest>("application/json")
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status401Unauthorized)
         .ProducesProblem(StatusCodes.Status404NotFound);
