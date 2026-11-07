@@ -1,5 +1,7 @@
 using Conduit.Application.Features.Account.Commands.Recover;
+using Conduit.Application.Features.Account.Commands.RotateAccountKey;
 using Conduit.Application.Features.Account.Commands.Signup;
+using Conduit.Application.Features.Account.Queries.GetAccountKey;
 using Conduit.Application.Features.Device.Commands.ApproveLink;
 using Conduit.Application.Features.Device.Commands.CreateLinkCode;
 using Conduit.Application.Features.Device.Commands.RedeemLinkCode;
@@ -15,6 +17,8 @@ public interface IIdentityUserProvider
 {
     Task<Result<SignupDto>> SignupAsync(SignupCommand command, CancellationToken ct = default);
     Task<Result<RecoverDto>> RecoverAsync(RecoverCommand command, CancellationToken ct = default);
+    Task<Result<GetAccountKeyDto>> GetAccountKeyAsync(CancellationToken ct = default);
+    Task<Result> RotateAccountKeyAsync(RotateAccountKeyCommand command, CancellationToken ct = default);
     Task<Result<GetDevicesDto>> GetDevicesAsync(CancellationToken ct = default);
     Task<Result<CreateLinkCodeDto>> CreateLinkCodeAsync(CancellationToken ct = default);
     Task<Result<RedeemLinkCodeDto>> RedeemLinkCodeAsync(RedeemLinkCodeCommand command, CancellationToken ct = default);

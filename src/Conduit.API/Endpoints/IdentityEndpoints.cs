@@ -1,7 +1,9 @@
 using Conduit.API.Common;
 using Conduit.API.Requests;
 using Conduit.Application.Features.Account.Commands.Recover;
+using Conduit.Application.Features.Account.Commands.RotateAccountKey;
 using Conduit.Application.Features.Account.Commands.Signup;
+using Conduit.Application.Features.Account.Queries.GetAccountKey;
 using Conduit.Application.Features.Authentication.Commands.BeginRecovery;
 using Conduit.Application.Features.Device.Commands.ApproveLink;
 using Conduit.Application.Features.Device.Commands.CreateLinkCode;
@@ -139,6 +141,36 @@ internal sealed class IdentityEndpoints : IEndpoint
         .Produces<RecoverDto>()
         .Accepts<RecoverRequest>("application/json")
         .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        user.MapGet("account-key", async ([FromServices] ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetAccountKeyQuery(), ct);
+            return result.Success ? Results.Ok(result.Value) : result.ToProblemDetails();
+        })
+        .RequireAuthorization()
+        .Produces<GetAccountKeyDto>()
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status404NotFound);
+
+        user.MapPut("account-key", async (
+                [FromServices] ISender sender,
+                [FromBody] RotateAccountKeyRequest req,
+                CancellationToken ct) =>
+        {
+            var result = await sender.Send(new RotateAccountKeyCommand
+            {
+                NewAccountPublicKey = req.NewAccountPublicKey,
+                Proof = req.Proof,
+                Approval = req.Approval,
+            }, ct);
+            return result.Success ? Results.Ok() : result.ToProblemDetails();
+        })
+        .RequireAuthorization()
+        .Produces(StatusCodes.Status200OK)
+        .Accepts<RotateAccountKeyRequest>("application/json")
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         var link = user.MapGroup("device/link");
 
