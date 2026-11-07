@@ -1,7 +1,9 @@
 using System.Net.Http.Json;
 using Conduit.Application.Contracts.Providers;
 using Conduit.Application.Features.Account.Commands.Recover;
+using Conduit.Application.Features.Account.Commands.RotateAccountKey;
 using Conduit.Application.Features.Account.Commands.Signup;
+using Conduit.Application.Features.Account.Queries.GetAccountKey;
 using Conduit.Application.Features.Device.Commands.ApproveLink;
 using Conduit.Application.Features.Device.Commands.CreateLinkCode;
 using Conduit.Application.Features.Device.Commands.RedeemLinkCode;
@@ -88,6 +90,12 @@ internal sealed class IdentityUserProvider(
 
         return Result.Ok();
     }
+
+    public Task<Result<GetAccountKeyDto>> GetAccountKeyAsync(CancellationToken ct = default) =>
+        Relay<GetAccountKeyDto>(() => _client.GetAsync("account-key", ct), ct);
+
+    public Task<Result> RotateAccountKeyAsync(RotateAccountKeyCommand command, CancellationToken ct = default) =>
+        Relay(() => _client.PutAsJsonAsync("account-key", command, ct), ct);
 
     public Task<Result<CreateLinkCodeDto>> CreateLinkCodeAsync(CancellationToken ct = default) =>
         Relay<CreateLinkCodeDto>(() => _client.PostAsync("device/link/code", null, ct), ct);
