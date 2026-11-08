@@ -16,6 +16,7 @@ using Conduit.Application.Features.Authentication.Commands.VerifyNonce;
 using Conduit.Application.Features.Authentication.Queries;
 using Conduit.Application.Features.Device.Commands.Delete;
 using Conduit.Application.Features.Device.Commands.Rename;
+using Conduit.Application.Features.Device.Queries.GetDeviceChain;
 using Conduit.Application.Features.Device.Queries.GetDevices;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
@@ -109,6 +110,7 @@ internal sealed class IdentityEndpoints : IEndpoint
                 PowNonce = req.PowNonce,
                 ChallengeSignature = req.ChallengeSignature,
                 DevicePublicKey = req.DevicePublicKey,
+                SignalIdentityKey = req.SignalIdentityKey,
                 DeviceApproval = req.DeviceApproval,
                 DeviceAppVersion = req.DeviceAppVersion,
                 DeviceType = req.DeviceType,
@@ -131,6 +133,7 @@ internal sealed class IdentityEndpoints : IEndpoint
                 ChallengeId = req.ChallengeId,
                 ChallengeSignature = req.ChallengeSignature,
                 DevicePublicKey = req.DevicePublicKey,
+                SignalIdentityKey = req.SignalIdentityKey,
                 DeviceApproval = req.DeviceApproval,
                 DeviceAppVersion = req.DeviceAppVersion,
                 DeviceType = req.DeviceType,
@@ -190,6 +193,7 @@ internal sealed class IdentityEndpoints : IEndpoint
             {
                 Code = req.Code,
                 DevicePublicKey = req.DevicePublicKey,
+                SignalIdentityKey = req.SignalIdentityKey,
                 DeviceAppVersion = req.DeviceAppVersion,
                 DeviceType = req.DeviceType,
                 DevicePlatform = req.DevicePlatform
@@ -244,6 +248,16 @@ internal sealed class IdentityEndpoints : IEndpoint
         })
         .RequireAuthorization()
         .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status404NotFound);
+
+        user.MapGet("device-chain", async ([FromServices] ISender sender, [FromQuery] Guid connectionId, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetDeviceChainQuery { ConnectionId = connectionId }, ct);
+            return result.Success ? Results.Ok(result.Value) : result.ToProblemDetails();
+        })
+        .RequireAuthorization()
+        .Produces<DeviceChainDto>()
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
         .ProducesProblem(StatusCodes.Status404NotFound);
 
         user.MapGet("devices", async (
