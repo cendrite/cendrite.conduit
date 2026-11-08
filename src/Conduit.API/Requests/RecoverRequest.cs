@@ -6,6 +6,7 @@ public sealed record RecoverRequest
     public required Guid ChallengeId { get; init; }
     public required string ChallengeSignature { get; init; }
     public required string DevicePublicKey { get; init; }
+    public required string SignalIdentityKey { get; init; }
     public required string DeviceApproval { get; init; }
     public required string DeviceAppVersion { get; init; }
     public required int DeviceType { get; init; }

@@ -10,6 +10,7 @@ using Conduit.Application.Features.Device.Commands.RedeemLinkCode;
 using Conduit.Application.Features.Device.Commands.RejectLink;
 using Conduit.Application.Features.Device.Queries.GetLinkStatus;
 using Conduit.Application.Features.Device.Queries.GetPendingLink;
+using Conduit.Application.Features.Device.Queries.GetDeviceChain;
 using Conduit.Application.Features.Device.Queries.GetDevices;
 using Conduit.Domain.Common;
 using Conduit.Infrastructure.Constants;
@@ -96,6 +97,9 @@ internal sealed class IdentityUserProvider(
 
     public Task<Result> RotateAccountKeyAsync(RotateAccountKeyCommand command, CancellationToken ct = default) =>
         Relay(() => _client.PutAsJsonAsync("account-key", command, ct), ct);
+
+    public Task<Result<DeviceChainDto>> GetDeviceChainAsync(Guid connectionId, CancellationToken ct = default) =>
+        Relay<DeviceChainDto>(() => _client.GetAsync($"device-chain?connectionId={connectionId}", ct), ct);
 
     public Task<Result<CreateLinkCodeDto>> CreateLinkCodeAsync(CancellationToken ct = default) =>
         Relay<CreateLinkCodeDto>(() => _client.PostAsync("device/link/code", null, ct), ct);

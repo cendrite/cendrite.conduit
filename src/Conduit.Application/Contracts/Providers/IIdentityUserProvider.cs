@@ -8,6 +8,7 @@ using Conduit.Application.Features.Device.Commands.RedeemLinkCode;
 using Conduit.Application.Features.Device.Commands.RejectLink;
 using Conduit.Application.Features.Device.Queries.GetLinkStatus;
 using Conduit.Application.Features.Device.Queries.GetPendingLink;
+using Conduit.Application.Features.Device.Queries.GetDeviceChain;
 using Conduit.Application.Features.Device.Queries.GetDevices;
 using Conduit.Domain.Common;
 
@@ -20,6 +21,7 @@ public interface IIdentityUserProvider
     Task<Result<GetAccountKeyDto>> GetAccountKeyAsync(CancellationToken ct = default);
     Task<Result> RotateAccountKeyAsync(RotateAccountKeyCommand command, CancellationToken ct = default);
     Task<Result<GetDevicesDto>> GetDevicesAsync(CancellationToken ct = default);
+    Task<Result<DeviceChainDto>> GetDeviceChainAsync(Guid connectionId, CancellationToken ct = default);
     Task<Result<CreateLinkCodeDto>> CreateLinkCodeAsync(CancellationToken ct = default);
     Task<Result<RedeemLinkCodeDto>> RedeemLinkCodeAsync(RedeemLinkCodeCommand command, CancellationToken ct = default);
     Task<Result<PendingLinkDto>> GetPendingLinkAsync(Guid pendingLinkId, CancellationToken ct = default);
