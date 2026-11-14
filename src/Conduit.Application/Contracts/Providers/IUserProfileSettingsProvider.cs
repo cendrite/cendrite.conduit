@@ -8,5 +8,6 @@ public interface IUserProfileSettingsProvider
 {
     public Task<Result<UpdateAvatarDto>> UpdateAvatar(IFormFile avatar, CancellationToken ct = default);
     public Task<Result<Avatar>> GetAvatar(Guid fileKey, CancellationToken ct = default);
+    public Task<Result> DeleteAvatar(CancellationToken ct = default);
     public Task<Result> TogglePrivacy(bool isPrivate, CancellationToken ct = default);
 }

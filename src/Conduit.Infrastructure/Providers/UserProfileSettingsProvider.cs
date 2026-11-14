@@ -66,6 +66,12 @@ internal sealed class UserProfileSettingsProvider(
         return Result.Ok(avatar);
     }
 
+    public async Task<Result> DeleteAvatar(CancellationToken ct = default)
+    {
+        var response = await _client.DeleteAsync("avatar", ct);
+        return response.IsSuccessStatusCode ? Result.Ok() : await response.ToFailureResultAsync(ct);
+    }
+
     public async Task<Result> TogglePrivacy(bool isPrivate, CancellationToken ct = default)
     {
         var response = await _client.PostAsJsonAsync("toggle-privacy", new { IsPrivate = isPrivate }, ct);
