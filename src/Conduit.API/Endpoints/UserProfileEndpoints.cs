@@ -1,4 +1,5 @@
 ﻿using Conduit.API.Common;
+using Conduit.Application.Features.UserProfile.Commands.DeleteAvatar;
 using Conduit.Application.Features.UserProfile.Commands.TogglePrivacy;
 using Conduit.Application.Features.UserProfile.Commands.UpdateAvatar;
 using Conduit.Application.Features.UserProfile.Commands.UpdateDisplayName;
@@ -80,6 +81,16 @@ internal sealed class UserProfileEndpoints : IEndpoint
             .DisableAntiforgery()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status415UnsupportedMediaType);
+
+        group.MapDelete("avatar", async (
+                [FromServices] ISender sender,
+                CancellationToken ct) =>
+            {
+                var result = await sender.Send(new DeleteAvatarCommand(), ct);
+                return result.Success ? Results.Ok() : result.ToProblemDetails();
+            })
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPost("toggle-privacy", async (
                  [FromServices] ISender sender, 
