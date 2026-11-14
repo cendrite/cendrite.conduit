@@ -1,4 +1,5 @@
 using Conduit.Application.Abstractions;
+using Conduit.Application.Features.Ledger.Dtos;
 
 namespace Conduit.Application.Features.Ledger.Commands.Append;
 
@@ -10,6 +11,5 @@ public sealed record AppendLedgerEventCommand : ICommand
     public required byte[] Payload { get; init; }
     public required byte[] WriteKeyPublic { get; init; }
     public required byte[] Signature { get; init; }
-    public required IReadOnlyCollection<byte[]> KeysAdded { get; init; }
-    public required IReadOnlyCollection<byte[]> KeysRemoved { get; init; }
+    public required KeyChangesDto KeyChanges { get; init; }
 }

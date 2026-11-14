@@ -7,6 +7,5 @@ internal sealed record AppendLedgerEventRequest
     public required byte[] Payload { get; init; }
     public required byte[] WriteKeyPublic { get; init; }
     public required byte[] Signature { get; init; }
-    public required IReadOnlyCollection<byte[]> KeysAdded { get; init; }
-    public required IReadOnlyCollection<byte[]> KeysRemoved { get; init; }
+    public required KeyChangesRequest KeyChanges { get; init; }
 }

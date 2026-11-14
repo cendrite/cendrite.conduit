@@ -9,8 +9,8 @@ public interface ILedgerProvider
         Guid ledgerId,
         byte[] payload,
         byte[] writeKey,
-        IReadOnlyCollection<byte[]> keysAdded,
         byte[] signature,
+        KeyChangesDto keyChanges,
         CancellationToken ct = default);
 
     Task<Result> AppendEventAsync(
@@ -20,8 +20,7 @@ public interface ILedgerProvider
         byte[] payload,
         byte[] writeKeyPublic,
         byte[] signature,
-        IReadOnlyCollection<byte[]> keysAdded,
-        IReadOnlyCollection<byte[]> keysRemoved,
+        KeyChangesDto keyChanges,
         CancellationToken ct = default);
 
     Task<Result> ArchiveLedgerAsync(

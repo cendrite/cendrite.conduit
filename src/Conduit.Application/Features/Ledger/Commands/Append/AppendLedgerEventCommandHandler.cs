@@ -15,8 +15,7 @@ public sealed class AppendLedgerEventCommandHandler(ILedgerProvider ledgerProvid
             request.Payload,
             request.WriteKeyPublic,
             request.Signature,
-            request.KeysAdded,
-            request.KeysRemoved,
+            request.KeyChanges,
             cancellationToken);
     }
 }

@@ -19,8 +19,8 @@ internal sealed class LedgerProvider(
         Guid ledgerId,
         byte[] payload,
         byte[] writeKey,
-        IReadOnlyCollection<byte[]> keysAdded,
         byte[] signature,
+        KeyChangesDto keyChanges,
         CancellationToken ct = default)
     {
         var response = await _client.PostAsJsonAsync(
@@ -30,8 +30,8 @@ internal sealed class LedgerProvider(
                 LedgerId = ledgerId,
                 Payload = payload,
                 WriteKey = writeKey,
-                KeysAdded = keysAdded,
-                Signature = signature
+                Signature = signature,
+                KeyChanges = keyChanges
             },
             ct);
 
@@ -51,8 +51,7 @@ internal sealed class LedgerProvider(
         byte[] payload,
         byte[] writeKeyPublic,
         byte[] signature,
-        IReadOnlyCollection<byte[]> keysAdded,
-        IReadOnlyCollection<byte[]> keysRemoved,
+        KeyChangesDto keyChanges,
         CancellationToken ct = default)
     {
         var response = await _client.PutAsJsonAsync(
@@ -64,8 +63,7 @@ internal sealed class LedgerProvider(
                 Payload = payload,
                 WriteKeyPublic = writeKeyPublic,
                 Signature = signature,
-                KeysAdded = keysAdded,
-                KeysRemoved = keysRemoved
+                KeyChanges = keyChanges
             },
             ct);
 
