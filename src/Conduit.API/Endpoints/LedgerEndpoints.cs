@@ -28,8 +28,8 @@ internal sealed class LedgerEndpoints : IEndpoint
                     LedgerId = req.LedgerId,
                     Payload = req.Payload,
                     WriteKey = req.WriteKey,
-                    KeysAdded = req.KeysAdded,
-                    Signature = req.Signature
+                    Signature = req.Signature,
+                    KeyChanges = new KeyChangesDto(req.KeyChanges.Added, req.KeyChanges.InvitesAdded, req.KeyChanges.Removed)
                 }, ct);
 
                 return result.Success ? Results.Created($"api/ledger/streams/{req.LedgerId}", null) : result.ToProblemDetails();
@@ -54,8 +54,7 @@ internal sealed class LedgerEndpoints : IEndpoint
                     Payload = req.Payload,
                     WriteKeyPublic = req.WriteKeyPublic,
                     Signature = req.Signature,
-                    KeysAdded = req.KeysAdded,
-                    KeysRemoved = req.KeysRemoved
+                    KeyChanges = new KeyChangesDto(req.KeyChanges.Added, req.KeyChanges.InvitesAdded, req.KeyChanges.Removed)
                 }, ct);
 
                 return result.Success ? Results.Ok() : result.ToProblemDetails();

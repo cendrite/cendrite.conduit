@@ -7,6 +7,5 @@ public sealed record LedgerEventDto
     public required byte[] Payload { get; init; }
     public required byte[] WriteKeyPublic { get; init; }
     public required byte[] Signature { get; init; }
-    public required List<byte[]> KeysAdded { get; init; }
-    public required List<byte[]> KeysRemoved { get; init; }
+    public required KeyChangesDto KeyChanges { get; init; }
 }
