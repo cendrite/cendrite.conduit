@@ -1,4 +1,5 @@
 using Conduit.Application.Features.Keys.Commands.Create;
+using Conduit.Application.Features.Ledger.Dtos;
 
 namespace Conduit.API.Requests;
 
@@ -19,4 +20,11 @@ internal static class RequestExtensions
             KyberPreKeyPublic = req.KyberPreKeyPublic,
             KyberPreKeySignature = req.KyberPreKeySignature
         };
+
+    public static KeyChangesDto MapToDto(this KeyChangesRequest req) =>
+        new(
+            req.Added,
+            [.. req.InvitesAdded.Select(g => new KeyGrantDto(g.PublicKey, g.Role))],
+            req.Removed,
+            [.. req.RolesChanged.Select(g => new KeyGrantDto(g.PublicKey, g.Role))]);
 }
